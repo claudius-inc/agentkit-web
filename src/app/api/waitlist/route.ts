@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initDb, db } from '@/lib/db';
-
-// Ensure DB is initialized on each request (serverless functions are stateless)
-async function getDb() {
-  return await initDb();
-}
+import { getDb } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
-    const client = await getDb();
+    const db = await getDb();
 
     const body = await request.json();
     const { email } = body;
@@ -30,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existing = await client.execute({
+    const existing = await db.execute({
       sql: 'SELECT id FROM waitlist WHERE email = ?',
       args: [email.toLowerCase()],
     });
@@ -43,13 +38,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert new signup
-    await client.execute({
+    await db.execute({
       sql: 'INSERT INTO waitlist (email, source) VALUES (?, ?)',
       args: [email.toLowerCase(), 'web'],
     });
 
     // Get waitlist position
-    const count = await client.execute('SELECT COUNT(*) as count FROM waitlist');
+    const count = await db.execute('SELECT COUNT(*) as count FROM waitlist');
     const position = count.rows[0]?.count || 1;
 
     return NextResponse.json({
@@ -67,8 +62,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const client = await getDb();
-    const result = await client.execute('SELECT COUNT(*) as count FROM waitlist');
+    const db = await getDb();
+    const result = await db.execute('SELECT COUNT(*) as count FROM waitlist');
     const count = result.rows[0]?.count || 0;
 
     return NextResponse.json({ count });
