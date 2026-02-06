@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AgentKit Landing Page
 
-## Getting Started
+Landing page for AgentKit - "Your personal AI assistant in 60 seconds."
 
-First, run the development server:
+## Live URL
+
+- **Production**: https://web-nu-two-48.vercel.app
+
+## Tech Stack
+
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- Turso (libSQL) for waitlist storage
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file:
 
-## Learn More
+```env
+# Turso Database (get from turso.tech dashboard)
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-auth-token
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Setting up Turso
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Install Turso CLI: `curl -sSfL https://get.tur.so/install.sh | bash`
+2. Login: `turso auth login`
+3. Create database: `turso db create agentkit`
+4. Get URL: `turso db show agentkit --url`
+5. Create token: `turso db tokens create agentkit`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Vercel Environment Variables
 
-## Deploy on Vercel
+Set these in the Vercel dashboard:
+- `TURSO_DATABASE_URL`
+- `TURSO_AUTH_TOKEN`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Features
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 🚀 Landing page with hero section
+- 💼 Three power packs: Finance, Productivity, Research
+- 📝 Waitlist signup form
+- ✨ Modern, responsive design
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   └── waitlist/     # Waitlist signup API
+│   ├── layout.tsx        # Root layout
+│   └── page.tsx          # Landing page
+└── lib/
+    └── db.ts             # Turso database client
+```
+
+## Deployment
+
+Automatic deployment via Vercel on push to `main` branch.
+
+GitHub: https://github.com/claudius-inc/agentkit-web
