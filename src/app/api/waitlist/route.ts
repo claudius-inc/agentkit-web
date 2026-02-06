@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, initDb } from '@/lib/db';
+import { initDb, db } from '@/lib/db';
 
-// Ensure DB is initialized
-let initialized = false;
-async function ensureInit() {
-  if (!initialized) {
-    await initDb();
-    initialized = true;
-  }
+// Ensure DB is initialized on each request (serverless functions are stateless)
+async function getDb() {
+  return await initDb();
 }
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureInit();
+    const client = await getDb();
 
     const body = await request.json();
     const { email } = body;
@@ -34,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existing = await db.execute({
+    const existing = await client.execute({
       sql: 'SELECT id FROM waitlist WHERE email = ?',
       args: [email.toLowerCase()],
     });
@@ -47,13 +43,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert new signup
-    await db.execute({
+    await client.execute({
       sql: 'INSERT INTO waitlist (email, source) VALUES (?, ?)',
       args: [email.toLowerCase(), 'web'],
     });
 
     // Get waitlist position
-    const count = await db.execute('SELECT COUNT(*) as count FROM waitlist');
+    const count = await client.execute('SELECT COUNT(*) as count FROM waitlist');
     const position = count.rows[0]?.count || 1;
 
     return NextResponse.json({
@@ -63,7 +59,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Waitlist signup error:', error);
     return NextResponse.json(
-      { error: 'Failed to join waitlist' },
+      { error: 'Failed to join waitlist. Please try again.' },
       { status: 500 }
     );
   }
@@ -71,9 +67,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    await ensureInit();
-    
-    const result = await db.execute('SELECT COUNT(*) as count FROM waitlist');
+    const client = await getDb();
+    const result = await client.execute('SELECT COUNT(*) as count FROM waitlist');
     const count = result.rows[0]?.count || 0;
 
     return NextResponse.json({ count });
